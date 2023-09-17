@@ -1,0 +1,51 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div id="map" style="height: 400px;"></div>
+<form method="post" id="visited-place-form">
+    {% csrf_token %}
+    <label for="location_name">Location Name:</label>
+    <input type="text" id="location_name" name="location_name" required><br><br>
+    <label for="latitude">Latitude:</label>
+    <input type="text" id="latitude" name="latitude" readonly><br><br>
+    <label for="longitude">Longitude:</label>
+    <input type="text" id="longitude" name="longitude" readonly><br><br>
+    <label for="comment">Comment:</label>
+    <input type="text" id="comment" name="comment"/>
+    <button type="submit">Submit</button>
+</form>
+
+<script>
+    // Initialize the map
+    var map = L.map('map').setView([0, 0], 2);
+
+    // Add a tile layer (you can customize the URL and attribution)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var marker;
+
+    // Handle click event on the map
+    map.on('click', function(e) {
+        if (marker) {
+            map.removeLayer(marker);
+        }
+
+        // Add a marker at the clicked location
+        marker = L.marker(e.latlng).addTo(map);
+
+        // Update the latitude and longitude input fields
+        document.getElementById('latitude').value = e.latlng.lat.toFixed(4);
+        document.getElementById('longitude').value = e.latlng.lng.toFixed(4);
+
+        // Reverse Geocoding to get location name
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${e.latlng.lat.toFixed(4)}&lon=${e.latlng.lng.toFixed(4)}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('location_name').value = data.display_name;
+            });
+    });
+</script>
+{% endblock content %}

@@ -1,0 +1,40 @@
+{% extends "blog/base.html" %}
+{% block content %}
+  <div id="map" style="height: 500px;"></div>
+  <div>
+    <h3 class="handwritten ">We appreciate every customer's every piece of money and passion. Horizon provides a venue of exploring the world and help you make the most reasonble decision.  </h3>
+  </div>
+  <script>
+    // Initialize the map
+    var map = L.map('map').setView([0, 0], 2); // Set the initial center and zoom level
+
+    // Add a tile layer (e.g., OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Add markers for visited places
+    var visitedPlacesData = {{ visited_places_data|safe }}; // Deserialize data from Django template
+    console.log(visitedPlacesData);
+
+    // for (var i = 0; i < visitedPlacesData.length; i++) {
+    //     var place = visitedPlacesData[i];
+    //     L.marker([place.latitude, place.longitude]).addTo(map)
+    //         .bindPopup('<b>' + place.location_name + '</b><br>' + place.visit_date);
+    // }
+    for (var i = 0; i < visitedPlacesData.length; i++) {
+        var place = visitedPlacesData[i];
+        var user = place.user;
+        var comment = place.comment;
+        
+        var marker = L.marker([parseFloat(place.latitude), parseFloat(place.longitude)]).addTo(map);
+        
+        // Create a popup with user and comment information
+        var popupContent = '<b>' + place.location_name + '</b><br>' +
+            'Added by: ' + user + '<br>' +
+            'Comment: ' + comment;
+        
+        marker.bindPopup(popupContent);
+    }
+  </script>
+{% endblock content %}
